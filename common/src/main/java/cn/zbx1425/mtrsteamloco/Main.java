@@ -3,6 +3,7 @@ package cn.zbx1425.mtrsteamloco;
 import cn.zbx1425.mtrsteamloco.block.BlockEyeCandy;
 import cn.zbx1425.mtrsteamloco.block.BlockOneWayGate;
 import cn.zbx1425.mtrsteamloco.block.BlockDirectNode;
+import cn.zbx1425.mtrsteamloco.item.CompoundCreator;
 import cn.zbx1425.mtrsteamloco.network.*;
 import com.google.gson.JsonParser;
 import mtr.CreativeModeTabs;
@@ -68,8 +69,7 @@ public class Main {
 
 	public static final RegistryObject<ItemWithCreativeTabBase> BRIDGE_CREATOR_1 = new RegistryObject<>(() -> new ItemBridgeCreator(1));
 
-	public static final RegistryObject<ItemWithCreativeTabBase> COMPOUND_CREATOR = new RegistryObject<>(() -> new ItemWithCreativeTabBase(CreativeModeTabs.CORE) {
-	});
+	public static final RegistryObject<ItemWithCreativeTabBase> COMPOUND_CREATOR = new RegistryObject<>(CompoundCreator::new);
 
 	public static final SoundEvent SOUND_EVENT_BELL = RegistryUtilities.createSoundEvent(Main.id("bell"));
 

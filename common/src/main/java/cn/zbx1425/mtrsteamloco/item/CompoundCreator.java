@@ -55,7 +55,7 @@ public class CompoundCreator extends ItemNodeModifierBase {
 
     public InteractionResultHolder<ItemStack> use(Level world, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             PacketScreen.sendScreenBlockS2C((ServerPlayer) player, "compound_creator", BlockPos.ZERO);
         }
         return InteractionResultHolder.success(stack);
