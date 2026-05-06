@@ -57,6 +57,15 @@ public class RegistriesWrapperImpl implements RegistriesWrapper {
     }
 
     @Override
+    public void registerItem(String id, RegistryObject<? extends Item> item, CreativeModeTabs.Wrapper tab) {
+        ITEMS.register(id, () -> {
+            final Item itemObject = item.get();
+            Registry.registerCreativeModeTab(tab.resourceLocation, itemObject);
+            return itemObject;
+        });
+    }
+
+    @Override
     public void registerBlockEntityType(String id, RegistryObject<? extends BlockEntityType<? extends BlockEntity>> blockEntityType) {
         BLOCK_ENTITY_TYPES.register(id, blockEntityType::get);
     }

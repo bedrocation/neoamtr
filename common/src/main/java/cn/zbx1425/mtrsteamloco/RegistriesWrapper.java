@@ -22,6 +22,8 @@ public interface RegistriesWrapper {
 
     void registerItem(String id, RegistryObject<ItemWithCreativeTabBase> item);
 
+    void registerItem(String id, RegistryObject<? extends Item> item, CreativeModeTabs.Wrapper tab);
+
     void registerBlockAndItem(String id, RegistryObject<Block> block, CreativeModeTabs.Wrapper tab);
 
     void registerBlockEntityType(String id, RegistryObject<? extends BlockEntityType<? extends BlockEntity>> blockEntityType);
