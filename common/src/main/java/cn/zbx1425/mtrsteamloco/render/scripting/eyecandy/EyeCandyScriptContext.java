@@ -8,6 +8,13 @@ import cn.zbx1425.sowcer.math.Matrix4f;
 import cn.zbx1425.sowcerext.model.ModelCluster;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import cn.zbx1425.sowcerext.reuse.DrawScheduler;
+import cn.zbx1425.sowcer.math.Matrix4f;
+import cn.zbx1425.mtrsteamloco.render.scripting.AbstractDrawCalls.DrawCall;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Collection;
 
 public class EyeCandyScriptContext extends AbstractScriptContext {
 
@@ -16,10 +23,20 @@ public class EyeCandyScriptContext extends AbstractScriptContext {
     public EyeCandyDrawCalls scriptResult;
     private EyeCandyDrawCalls scriptResultWriting;
 
+    public Map<Object, DrawCall> drawCalls = new HashMap<>();
+
     public EyeCandyScriptContext(BlockEyeCandy.BlockEntityEyeCandy entity) {
         scriptResult = new EyeCandyDrawCalls();
         scriptResultWriting = new EyeCandyDrawCalls();
         this.entity = entity;
+    }
+
+    public void commit(DrawScheduler drawScheduler, Matrix4f basePose, Matrix4f worldPose, int light) {
+        Collection<DrawCall> calls = drawCalls.values();
+        for (DrawCall entry : calls) {
+            entry.commit(drawScheduler, basePose, worldPose, light);
+        }
+        scriptResult.commit(drawScheduler, basePose, worldPose, light);
     }
 
     @Override
@@ -42,7 +59,7 @@ public class EyeCandyScriptContext extends AbstractScriptContext {
 
     @Override
     public boolean isBearerAlive() {
-        return !disposeForReload && !entity.isRemoved();
+        return !disposeForReload && !entity.isRemoved() && !disposed;
     }
 
     public void drawModel(ModelCluster model, Matrices poseStack) {

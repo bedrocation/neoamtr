@@ -15,6 +15,10 @@ import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
+import cn.zbx1425.mtrsteamloco.data.RailExtraSupplier;
+import cn.zbx1425.mtrsteamloco.data.TrainExtraSupplier;
+import mtr.data.Rail;
+import cn.zbx1425.mtrsteamloco.render.scripting.train.TrainWrapper;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -114,12 +118,16 @@ public class ScriptedTrainRenderer extends TrainRendererBase {
 
         final BlockPos posAverage = applyAverageTransform(x, y, z);
         if (posAverage == null) return;
+        Matrix4f worldPose = new Matrix4f(matrices.last().pose()).copy();
         matrices.pushPose();
-        applyTransform(train, x, y, z, yaw, pitch, roll, false);
+        matrices.translate(x, y, z);
+        PoseStackUtil.rotY(matrices, (float) Math.PI + yaw);
+        final boolean hasPitch = pitch < 0 ? train.transportMode.hasPitchAscending : train.transportMode.hasPitchDescending;
+        PoseStackUtil.rotX(matrices, hasPitch ? pitch : 0);
         final int light = LightTexture.pack(world.getBrightness(LightLayer.BLOCK, posAverage), world.getBrightness(LightLayer.SKY, posAverage));
         Matrix4f pose = new Matrix4f(matrices.last().pose());
         synchronized (trainScripting) {
-            trainScripting.scriptResult.commitConn(0, MainClient.drawScheduler, pose, light);
+            trainScripting.scriptResult.commitConn(0, MainClient.drawScheduler, pose, worldPose, light);
             matrices.popPose();
             trainScripting.scriptResult.commitConnImmediate(0, matrices, vertexConsumers,
                     prevPos1, prevPos2, prevPos3, prevPos4, thisPos1, thisPos2, thisPos3, thisPos4, light);
@@ -137,5 +145,4 @@ public class ScriptedTrainRenderer extends TrainRendererBase {
             baseRenderer.renderBarrier(prevPos1, prevPos2, prevPos3, prevPos4, thisPos1, thisPos2, thisPos3, thisPos4, x, y, z, yaw, pitch, roll);
         }
     }
-
 }

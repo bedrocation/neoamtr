@@ -15,6 +15,13 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
+import cn.zbx1425.sowcerext.reuse.DrawScheduler;
+import cn.zbx1425.sowcer.math.Matrix4f;
+import cn.zbx1425.mtrsteamloco.render.scripting.AbstractDrawCalls.DrawCall;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Collection;
 
 @SuppressWarnings("unused")
 public class TrainScriptContext extends AbstractScriptContext {
@@ -25,13 +32,26 @@ public class TrainScriptContext extends AbstractScriptContext {
 
     public TrainDrawCalls scriptResult;
     private TrainDrawCalls scriptResultWriting;
+    public Map<Object, DrawCall>[] drawCalls;
 
     public TrainScriptContext(TrainClient train) {
-        this.scriptResult = new TrainDrawCalls(train.trainCars);
-        this.scriptResultWriting = new TrainDrawCalls(train.trainCars);
+        scriptResult = new TrainDrawCalls(train.trainCars);
+        scriptResultWriting = new TrainDrawCalls(train.trainCars);
         this.train = train;
-        this.trainExtra = new TrainWrapper(train);
-        this.trainExtraWriting = new TrainWrapper(train);
+        trainExtra = new TrainWrapper(train);
+        trainExtraWriting = new TrainWrapper(train);
+        drawCalls = new Map[train.trainCars];
+        for (int i = 0; i < train.trainCars; i++) {
+            drawCalls[i] = new HashMap<>();
+        }
+    }
+
+    public void commitCar(int car, DrawScheduler drawScheduler, Matrix4f basePose, Matrix4f worldPose, int light) {
+        Collection<DrawCall> calls = drawCalls[car].values();
+        for (DrawCall entry : calls) {
+            entry.commit(drawScheduler, basePose, worldPose, light);
+        }
+        scriptResult.commitCar(car, drawScheduler, basePose, worldPose, light);
     }
 
     @Override
@@ -84,14 +104,13 @@ public class TrainScriptContext extends AbstractScriptContext {
     }
 
     public void playCarSound(ResourceLocation sound, int carIndex, float x, float y, float z, float volume, float pitch) {
-        scriptResultWriting.addCarSound(
-                carIndex,
-#if MC_VERSION >= "11903"
-                SoundEvent.createVariableRangeEvent(sound),
+        scriptResultWriting.addCarSound(carIndex,
+                #if MC_VERSION >= "11903"
+        SoundEvent.createVariableRangeEvent(sound)
 #else
-                new SoundEvent(sound),
+        new SoundEvent(sound)
 #endif
-                new Vector3f(x, y, z), volume, pitch
+                , new Vector3f(x, y, z), volume, pitch
         );
     }
 
@@ -102,10 +121,10 @@ public class TrainScriptContext extends AbstractScriptContext {
                 Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(
                         sound, SoundSource.BLOCKS,
                         volume, pitch,
-#if MC_VERSION >= "11900"
-                        SoundInstance.createUnseededRandom(),
+                        #if MC_VERSION >= "11900"
+                SoundInstance.createUnseededRandom(),
 #endif
-                        false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true
+                false, 0, SoundInstance.Attenuation.NONE, 0.0, 0.0, 0.0, true
                 ));
             }
         });

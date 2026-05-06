@@ -11,6 +11,20 @@ public class Matrices {
         stack.push(new Matrix4f());
     }
 
+    public Matrices(Matrix4f matrix) {
+        stack.push(matrix.copy());
+    }
+
+    public Matrices(Matrices matrices) {
+        for (Matrix4f matrix : matrices.stack) {
+            stack.push(matrix.copy());
+        }
+    }
+
+    public Matrices copy() {
+        return new Matrices(this);
+    }
+
     public void translate(double x, double y, double z) {
         this.translate((float)x, (float)y, (float)z);
     }

@@ -18,7 +18,7 @@ public class Matrix4f {
         this.impl = moj;
     }
 
-    private Matrix4f(Matrix4f other) {
+    public Matrix4f(Matrix4f other) {
         this.impl = new org.joml.Matrix4f(other.impl);
     }
 
@@ -102,9 +102,14 @@ public class Matrix4f {
     }
 
     public Vector3f getTranslationPart() {
-       org.joml.Vector3f result = new org.joml.Vector3f();
-       return new Vector3f(impl.getTranslation(result));
+        org.joml.Vector3f result = new org.joml.Vector3f();
+        return new Vector3f(impl.getTranslation(result));
     }
+
+    public void scale(float x, float y, float z) {
+        impl.scale(x, y, z);
+    }
+
 #else
 
     protected final com.mojang.math.Matrix4f impl;
@@ -118,7 +123,7 @@ public class Matrix4f {
         this.impl = moj;
     }
 
-    private Matrix4f(Matrix4f other) {
+    public Matrix4f(Matrix4f other) {
         this.impl = other.impl.copy();
     }
 
@@ -200,7 +205,102 @@ public class Matrix4f {
         impl.store(srcFloatBuffer);
         return new Vector3f(srcValues[12], srcValues[13], srcValues[14]);
     }
+
+    public void scale(float x, float y, float z) {
+        float[] values = new float[16];
+        FloatBuffer floatBuffer = FloatBuffer.wrap(values);
+        impl.store(floatBuffer);
+        values[0] *= x;
+        values[1] *= x;
+        values[2] *= x;
+        values[3] *= x;
+        values[4] *= y;
+        values[5] *= y;
+        values[6] *= y;
+        values[7] *= y;
+        values[8] *= z;
+        values[9] *= z;
+        values[10] *= z;
+        values[11] *= z;
+        impl.load(FloatBuffer.wrap(values));
+    }
+
 #endif
+
+    public void mul(Matrix4f other) {
+        multiply(other);
+    }
+
+    public void translate(Vector3f vec) {
+        translate(vec.x(), vec.y(), vec.z());
+    }
+
+    public void rotateXYZ(float x, float y, float z) {
+        rotateX(x);
+        rotateY(y);
+        rotateZ(z);
+    }
+
+    public void rotateXYZ(Vector3f vec) {
+        rotateXYZ(vec.x(), vec.y(), vec.z());
+    }
+
+    public void rotateYXZ(float y, float x, float z) {
+        rotateY(y);
+        rotateX(x);
+        rotateZ(z);
+    }
+
+    public void rotateYXZ(Vector3f vec) {
+        rotateYXZ(vec.y(), vec.x(), vec.z());
+    }
+
+    public void rotateZYX(float z, float y, float x) {
+        rotateZ(z);
+        rotateY(y);
+        rotateX(x);
+    }
+
+    public void rotateZYX(Vector3f vec) {
+        rotateZYX(vec.z(), vec.y(), vec.x());
+    }
+
+    public Vector3f getEulerAnglesZYX() {
+        float[] src = new float[16];
+        FloatBuffer srcFloatBuffer = FloatBuffer.wrap(src);
+        store(srcFloatBuffer);
+
+        float x = (float) Math.atan2(src[index(1, 2)], src[index(2, 2)]);
+        float y = (float) Math.atan2(-src[index(0, 2)], Math.sqrt(1.0F - src[index(0, 2)] * src[index(0, 2)]));
+        float z = (float) Math.atan2(src[index(0, 1)], src[index(0, 0)]);
+        return new Vector3f(x, y, z);
+    }
+
+    public Vector3f getEulerAnglesXYZ() {
+        float[] src = new float[16];
+        FloatBuffer srcFloatBuffer = FloatBuffer.wrap(src);
+        store(srcFloatBuffer);
+
+        float x = (float) Math.atan2(-src[index(2, 1)], src[index(2, 2)]);
+        float y = (float) Math.atan2(src[index(2, 0)], Math.sqrt(1.0F - src[index(2, 0)] * src[index(2, 0)]));
+        float z = (float) Math.atan2(-src[index(1, 0)], src[index(0, 0)]);
+        return new Vector3f(x, y, z);
+    }
+
+    public Vector3f getEulerAnglesYXZ() {
+        float[] src = new float[16];
+        FloatBuffer srcFloatBuffer = FloatBuffer.wrap(src);
+        store(srcFloatBuffer);
+
+        float x = (float) Math.atan2(-src[index(2, 1)], Math.sqrt(1.0F - src[index(2, 1)] * src[index(2, 1)]));
+        float y = (float) Math.atan2(src[index(2, 0)], src[index(2, 2)]);
+        float z = (float) Math.atan2(src[index(1, 0)], src[index(1, 1)]);
+        return new Vector3f(x, y, z);
+    }
+
+    int index(int p_27642_, int p_27643_) {
+        return p_27643_ * 4 + p_27642_;
+    }
 
     @Override
     public int hashCode() {
@@ -216,6 +316,24 @@ public class Matrix4f {
         Matrix4f matrix4f = (Matrix4f) o;
 
         return impl.equals(matrix4f.impl);
+    }
+
+    public String toString() {
+        float[] src = new float[16];
+        FloatBuffer srcFloatBuffer = FloatBuffer.wrap(src);
+        store(srcFloatBuffer);
+        StringBuilder sb = new StringBuilder();
+        sb.append("Matrix4f[\n");
+        for (int i = 0; i < 4; i++) {
+            sb.append("  ");
+            for (int j = 0; j < 4; j++) {
+                sb.append(src[i * 4 + j]);
+                sb.append(", ");
+            }
+            sb.append("\n");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     public static final Matrix4f IDENTITY = new Matrix4f();

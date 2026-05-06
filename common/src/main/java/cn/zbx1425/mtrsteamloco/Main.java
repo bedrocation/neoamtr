@@ -2,6 +2,7 @@ package cn.zbx1425.mtrsteamloco;
 
 import cn.zbx1425.mtrsteamloco.block.BlockEyeCandy;
 import cn.zbx1425.mtrsteamloco.block.BlockOneWayGate;
+import cn.zbx1425.mtrsteamloco.block.BlockDirectNode;
 import cn.zbx1425.mtrsteamloco.network.*;
 import com.google.gson.JsonParser;
 import mtr.CreativeModeTabs;
@@ -54,9 +55,21 @@ public class Main {
 					BlockEyeCandy.BlockEntityEyeCandy::new,
 					BLOCK_EYE_CANDY.get()
 			));
+
+    public static final RegistryObject<Block> BLOCK_DIRECT_NODE = new RegistryObject<>(BlockDirectNode::new);
+    public static final RegistryObject<BlockEntityType<BlockDirectNode.BlockEntityDirectNode>>
+            BLOCK_ENTITY_TYPE_DIRECT_NODE = new RegistryObject<>(() ->
+            Registry.getBlockEntityType(
+                    BlockDirectNode.BlockEntityDirectNode::new,
+                    BLOCK_DIRECT_NODE.get()
+            ));
+
 	public static final RegistryObject<Block> BLOCK_ONE_WAY_GATE = new RegistryObject<>(BlockOneWayGate::new);
 
 	public static final RegistryObject<ItemWithCreativeTabBase> BRIDGE_CREATOR_1 = new RegistryObject<>(() -> new ItemBridgeCreator(1));
+
+	public static final RegistryObject<ItemWithCreativeTabBase> COMPOUND_CREATOR = new RegistryObject<>(() -> new ItemWithCreativeTabBase(CreativeModeTabs.CORE) {
+	});
 
 	public static final SoundEvent SOUND_EVENT_BELL = RegistryUtilities.createSoundEvent(Main.id("bell"));
 
@@ -72,8 +85,11 @@ public class Main {
 		if (enableRegistry) {
 			registries.registerBlockAndItem("eye_candy", BLOCK_EYE_CANDY, CreativeModeTabs.STATION_BUILDING_BLOCKS);
 			registries.registerBlockEntityType("eye_candy", BLOCK_ENTITY_TYPE_EYE_CANDY);
+            registries.registerBlockAndItem("direct_node", BLOCK_DIRECT_NODE, CreativeModeTabs.CORE);
+            registries.registerBlockEntityType("direct_node", BLOCK_ENTITY_TYPE_DIRECT_NODE);
 			registries.registerBlockAndItem("one_way_gate_1", BLOCK_ONE_WAY_GATE, CreativeModeTabs.RAILWAY_FACILITIES);
 			registries.registerItem("bridge_creator_1", BRIDGE_CREATOR_1);
+			registries.registerItem("compound_creator", COMPOUND_CREATOR);
 			registries.registerSoundEvent("bell", SOUND_EVENT_BELL);
 			PARTICLE_STEAM_SMOKE = registries.createParticleType(true);
 			registries.registerParticleType("steam_smoke", PARTICLE_STEAM_SMOKE);

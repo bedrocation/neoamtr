@@ -6,6 +6,7 @@ import mtr.mappings.Text;
 import mtr.mappings.UtilitiesClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractSliderButton;
+import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.Screen;
 
 import java.util.function.Consumer;
@@ -14,12 +15,17 @@ import java.util.function.Function;
 public class WidgetSlider extends AbstractSliderButton implements IGui {
 
     private final int maxValue;
-    private final Function<Integer, String> setMessage;
+    private final Function<Integer, Component> setMessage;
+    private boolean editable = true;
 
     private static final int SLIDER_WIDTH = 10;
 
     public WidgetSlider(int maxValue, int value, Function<Integer, String> setMessage) {
-        super(0, 0, 0, 20, Text.literal(""), 0);
+        this(20, maxValue, value, i -> Text.literal(setMessage.apply(i)));
+    }
+
+    public WidgetSlider(int height, int maxValue, int value, Function<Integer, Component> setMessage) {
+        super(0, 0, 0, height, Text.literal(""), 0);
         this.maxValue = maxValue;
         this.setMessage = setMessage;
         this.setValue(value);
@@ -49,7 +55,7 @@ public class WidgetSlider extends AbstractSliderButton implements IGui {
 
     @Override
     protected void updateMessage() {
-        setMessage(Text.literal(setMessage.apply(getIntValue())));
+        setMessage(setMessage.apply(getIntValue()));
     }
 
     @Override
@@ -57,11 +63,22 @@ public class WidgetSlider extends AbstractSliderButton implements IGui {
     }
 
     public void setValue(int valueInt) {
+        if (!editable) return;
         value = (double) valueInt / maxValue;
         updateMessage();
     }
 
+    @Override
+    public boolean keyPressed(int p_93596_, int p_93597_, int p_93598_) {
+        if (!editable) return false;
+        return super.keyPressed(p_93596_, p_93597_, p_93598_);
+    }
+
     public int getIntValue() {
         return (int) Math.round(value * maxValue);
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 }

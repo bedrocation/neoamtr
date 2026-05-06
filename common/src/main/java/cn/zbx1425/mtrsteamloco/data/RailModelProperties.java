@@ -8,6 +8,7 @@ import cn.zbx1425.sowcerext.model.RawMesh;
 import cn.zbx1425.sowcerext.model.RawModel;
 import cn.zbx1425.sowcerext.model.Vertex;
 import net.minecraft.network.chat.Component;
+import cn.zbx1425.mtrsteamloco.render.scripting.ScriptHolder;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -15,6 +16,8 @@ import java.io.IOException;
 public class RailModelProperties {
 
     public Component name;
+
+    public ScriptHolder script;
 
     public RawModel rawModel;
     public Model uploadedModel;
@@ -24,19 +27,19 @@ public class RailModelProperties {
 
     public float yOffset;
 
-    public RailModelProperties(Component name, RawModel rawModel, float repeatInterval, float yOffset) {
+    public RailModelProperties(Component name, RawModel rawModel, float repeatInterval, float yOffset, ScriptHolder script) {
         this.name = name;
+
+        this.yOffset = yOffset;
+        this.script = script;
 
         if (rawModel == null) {
             this.rawModel = null;
             this.uploadedModel = null;
             this.boundingBox = 0L;
             this.repeatInterval = repeatInterval;
-            this.yOffset = yOffset;
             return;
         }
-
-        this.yOffset = yOffset;
 
         rawModel.clearAttrState(VertAttrType.COLOR);
         rawModel.applyRotation(new Vector3f(0.577f, 0.577f, 0.577f), (float)Math.toRadians(1));

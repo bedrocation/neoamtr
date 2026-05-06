@@ -3,6 +3,7 @@ dependencies {
 	// modApi "${rootProject.architectury_id}:architectury:${rootProject.architectury_version}"
 
 	modApi("me.shedaniel.cloth:cloth-config:${rootProject.cloth_config_version}") { transitive = false }
+    modApi("me.shedaniel.cloth:basic-math:0.6.1")
 
 	annotationProcessor 'systems.manifold:manifold-preprocessor:+'
 }

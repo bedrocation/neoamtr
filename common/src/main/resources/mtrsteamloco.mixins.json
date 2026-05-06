@@ -36,6 +36,15 @@
     "PackMixin",
     "RailActionsMixin",
     "RailMixin",
-    "RailwayDataAccessor"
+    "RailwayDataAccessor",
+    "TrainMixin",
+    "SidingAccessor",
+    "SidingMixin",
+    "RailwayDataRailActionsModuleMixin",
+    "RailTypeMixin",
+    "SidingScreenMixin",
+    "RailAngleMixin",
+    "ItemNodeModifierBaseMixin",
+    "PathFinderMixin"
   ]
 }

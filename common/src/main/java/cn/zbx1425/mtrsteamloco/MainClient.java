@@ -6,6 +6,7 @@ import cn.zbx1425.mtrsteamloco.network.PacketScreen;
 import cn.zbx1425.mtrsteamloco.network.PacketVersionCheck;
 import cn.zbx1425.mtrsteamloco.network.PacketVirtualDrivingPlayers;
 import cn.zbx1425.mtrsteamloco.render.ShadersModHandler;
+import cn.zbx1425.mtrsteamloco.render.block.BlockEntityDirectNodeRenderer;
 import cn.zbx1425.mtrsteamloco.render.block.BlockEntityEyeCandyRenderer;
 import cn.zbx1425.mtrsteamloco.render.rail.RailRenderDispatcher;
 import cn.zbx1425.sowcer.util.DrawContext;
@@ -33,6 +34,7 @@ public class MainClient {
 		mtr.client.CustomResources.registerReloadListener(CustomResources::init);
 
 		if (Main.enableRegistry) {
+			RegistryClient.registerTileEntityRenderer(Main.BLOCK_ENTITY_TYPE_DIRECT_NODE.get(), BlockEntityDirectNodeRenderer::new);
 			RegistryClient.registerTileEntityRenderer(Main.BLOCK_ENTITY_TYPE_EYE_CANDY.get(), BlockEntityEyeCandyRenderer::new);
 			RegistryClient.registerBlockRenderType(RenderType.cutout(), Main.BLOCK_ONE_WAY_GATE.get());
 

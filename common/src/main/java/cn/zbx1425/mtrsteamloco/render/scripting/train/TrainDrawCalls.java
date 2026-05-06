@@ -55,7 +55,7 @@ public class TrainDrawCalls extends AbstractDrawCalls {
 
     public void commitCar(int car, DrawScheduler drawScheduler, Matrix4f basePose, Matrix4f worldPose, int light) {
         for (ClusterDrawCall clusterDrawCall : carDrawLists[car]) {
-            clusterDrawCall.commit(drawScheduler, basePose, light);
+            clusterDrawCall.commit(drawScheduler, basePose, worldPose, light);
         }
         ClientLevel level = Minecraft.getInstance().level;
         if (level == null) return;
@@ -76,9 +76,9 @@ public class TrainDrawCalls extends AbstractDrawCalls {
         connStretchTextures[car] = texture;
     }
 
-    public void commitConn(int car, DrawScheduler drawScheduler, Matrix4f basePose, int light) {
+    public void commitConn(int car, DrawScheduler drawScheduler, Matrix4f basePose, Matrix4f worldPose, int light) {
         for (ClusterDrawCall clusterDrawCall : connDrawLists[car]) {
-            clusterDrawCall.commit(drawScheduler, basePose, light);
+            clusterDrawCall.commit(drawScheduler, basePose, worldPose, light);
         }
     }
 

@@ -9,6 +9,6 @@ import java.util.List;
 @Mixin(Train.class)
 public interface TrainAccessor {
 
-    @Accessor(remap = false)
+    @Accessor(value = "distances", remap = false)
     List<Double> getDistances();
 }

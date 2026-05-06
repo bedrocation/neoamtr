@@ -13,11 +13,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Pair;
 import mtr.mappings.Text;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import mtr.mappings.Utilities;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
+import cn.zbx1425.mtrsteamloco.render.scripting.ScriptHolder;
 import net.minecraft.server.packs.resources.ResourceManager;
+import cn.zbx1425.sowcerext.util.ResourceUtil;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
@@ -43,9 +46,9 @@ public class RailModelRegistry {
         elements.clear();
 
         //
-        register("", new RailModelProperties(Text.translatable("rail.mtrsteamloco.default"), null, 1f, 0f));
+        register("", new RailModelProperties(Text.translatable("rail.mtrsteamloco.default"), null, 1f, 0f, null));
         // This is pulled from registry and shouldn't be shown
-        register("null", new RailModelProperties(Text.translatable("rail.mtrsteamloco.hidden"), null, Float.MAX_VALUE, 0f));
+        register("null", new RailModelProperties(Text.translatable("rail.mtrsteamloco.hidden"), null, Float.MAX_VALUE, 0f, null));
 
         try {
             RawModel railNodeRawModel = MainClient.modelManager.loadRawModel(resourceManager,
@@ -83,22 +86,25 @@ public class RailModelRegistry {
     }
 
     private static final RailModelProperties EMPTY_PROPERTY = new RailModelProperties(
-            Text.literal(""), null, 1f, 0
+            Text.literal(""), null, 1f, 0, null
     );
 
     public static RailModelProperties getProperty(String key) {
         return elements.getOrDefault(key, EMPTY_PROPERTY);
     }
 
-    private static RailModelProperties loadFromJson(ResourceManager resourceManager, String key, JsonObject obj) throws IOException {
+    private static RailModelProperties loadFromJson(ResourceManager resourceManager, String key, JsonObject obj) throws Exception {
         if (obj.has("atlasIndex")) {
             MainClient.atlasManager.load(
                     MtrModelRegistryUtil.resourceManager,  ResourceLocation.parse(obj.get("atlasIndex").getAsString())
             );
         }
 
-        RawModel rawModel = MainClient.modelManager.loadRawModel(resourceManager,
-                ResourceLocation.parse(obj.get("model").getAsString()), MainClient.atlasManager).copy();
+        RawModel rawModel = null;
+
+        if (obj.has("model")) {
+            rawModel = MainClient.modelManager.loadRawModel(resourceManager,
+                    ResourceLocation.parse(obj.get("model").getAsString()), MainClient.atlasManager).copy();
 
         if (obj.has("textureId")) {
             rawModel.replaceTexture("default.png", ResourceLocation.parse(obj.get("textureId").getAsString()));
@@ -107,33 +113,32 @@ public class RailModelRegistry {
             rawModel.applyUVMirror(false, true);
         }
 
-        if (obj.has("translation")) {
-            JsonArray vec = obj.get("translation").getAsJsonArray();
-            rawModel.applyTranslation(vec.get(0).getAsFloat(), vec.get(1).getAsFloat(), vec.get(2).getAsFloat());
+            rawModel.sourceLocation =  ResourceLocation.parse(rawModel.sourceLocation.toString() + "/" + key);
         }
-        if (obj.has("rotation")) {
-            JsonArray vec = obj.get("rotation").getAsJsonArray();
-            rawModel.applyRotation(new Vector3f(1, 0, 0), vec.get(0).getAsFloat());
-            rawModel.applyRotation(new Vector3f(0, 1, 0), vec.get(1).getAsFloat());
-            rawModel.applyRotation(new Vector3f(0, 0, 1), vec.get(2).getAsFloat());
-        }
-        if (obj.has("scale")) {
-            JsonArray vec = obj.get("scale").getAsJsonArray();
-            rawModel.applyScale(vec.get(0).getAsFloat(), vec.get(1).getAsFloat(), vec.get(2).getAsFloat());
-        }
-        if (obj.has("mirror")) {
-            JsonArray vec = obj.get("mirror").getAsJsonArray();
-            rawModel.applyMirror(
-                    vec.get(0).getAsBoolean(), vec.get(1).getAsBoolean(), vec.get(2).getAsBoolean(),
-                    vec.get(0).getAsBoolean(), vec.get(1).getAsBoolean(), vec.get(2).getAsBoolean()
-            );
-        }
-
-        rawModel.sourceLocation = ResourceLocation.parse(rawModel.sourceLocation.toString() + "/" + key);
 
         float repeatInterval = obj.has("repeatInterval") ? obj.get("repeatInterval").getAsFloat() : 0.5f;
         float yOffset = obj.has("yOffset") ? obj.get("yOffset").getAsFloat() : 0f;
 
-        return new RailModelProperties(Text.translatable(obj.get("name").getAsString()), rawModel, repeatInterval, yOffset);
+
+        ScriptHolder script = null;
+        if (obj.has("scriptFiles")) {
+            script = new ScriptHolder();
+            Map<ResourceLocation, String> scripts = new Object2ObjectArrayMap<>();
+            if (obj.has("scriptTexts")) {
+                JsonArray scriptTexts = obj.get("scriptTexts").getAsJsonArray();
+                for (int i = 0; i < scriptTexts.size(); i++) {
+                    scripts.put(ResourceLocation.fromNamespaceAndPath("mtrsteamloco", "script_texts/" + key + "/" + i),
+                            scriptTexts.get(i).getAsString());
+                }
+            }
+            JsonArray scriptFiles = obj.get("scriptFiles").getAsJsonArray();
+            for (int i = 0; i < scriptFiles.size(); i++) {
+                ResourceLocation scriptLocation =  ResourceLocation.parse(scriptFiles.get(i).getAsString());
+                scripts.put(scriptLocation, ResourceUtil.readResource(resourceManager, scriptLocation));
+            }
+            script.load("Rail " + key, "Rail", resourceManager, scripts, obj, key);
+        }
+
+        return new RailModelProperties(Text.translatable(obj.get("name").getAsString()), rawModel, repeatInterval, yOffset, script);
     }
 }

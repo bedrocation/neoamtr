@@ -21,6 +21,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import cn.zbx1425.mtrsteamloco.BuildConfig;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,10 +67,19 @@ public class EyeCandyRegistry {
     }
 
     private static EyeCandyProperties loadFromJson(ResourceManager resourceManager, String key, JsonObject obj) throws Exception {
+        if (key.isEmpty()) {
+            throw new IllegalArgumentException("Invalid eye-candy key: " + key + " (empty)");
+        }
+
         if (obj.has("atlasIndex")) {
             MainClient.atlasManager.load(
                     MtrModelRegistryUtil.resourceManager,  ResourceLocation.parse(obj.get("atlasIndex").getAsString())
             );
+        }
+
+        int lightLevel = 0;
+        if (obj.has("lightLevel")) {
+            lightLevel = obj.get("lightLevel").getAsInt();
         }
 
         ModelCluster cluster = null;
@@ -126,12 +136,18 @@ public class EyeCandyRegistry {
                 ResourceLocation scriptLocation = ResourceLocation.parse(scriptFiles.get(i).getAsString());
                 scripts.put(scriptLocation, ResourceUtil.readResource(resourceManager, scriptLocation));
             }
-            script.load("EyeCandy " + key, "Block", resourceManager, scripts);
+            script.load("EyeCandy " + key, "Block", resourceManager, scripts, obj, key);
         }
+        String shape = obj.has("shape")? obj.get("shape").getAsString() : "0, 0, 0, 16, 16, 16";
+        String collisionShape = obj.has("collisionShape") ? obj.get("collisionShape").getAsString() : "0, 0, 0, 0, 0, 0";
+        boolean fixedMatrix = obj.has("fixedMatrix") ? obj.get("fixedMatrix").getAsBoolean() : false;
+        boolean isTicketBarrier = obj.has("isTicketBarrier") ? obj.get("isTicketBarrier").getAsBoolean() : false;
+        boolean isEntrance = obj.has("isEntrance") ? obj.get("isEntrance").getAsBoolean() : false;
+        boolean asPlatform = obj.has("asPlatform") ? obj.get("asPlatform").getAsBoolean() : false;
         if (cluster == null && script == null) {
             throw new IllegalArgumentException("Invalid eye-candy json: " + key);
         } else {
-            return new EyeCandyProperties(Text.translatable(obj.get("name").getAsString()), cluster, script);
+            return new EyeCandyProperties(Text.translatable(obj.get("name").getAsString()), cluster, script, shape, collisionShape, fixedMatrix, lightLevel, isTicketBarrier, isEntrance, asPlatform);
         }
     }
 }

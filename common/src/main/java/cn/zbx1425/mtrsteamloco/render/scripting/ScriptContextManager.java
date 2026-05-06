@@ -26,4 +26,10 @@ public class ScriptContextManager {
             }
         }
     }
+
+    public static void clearDebugInfo() {
+        for (AbstractScriptContext context : livingContexts.keySet()) {
+            context.clearDebugInfo();
+        }
+    }
 }

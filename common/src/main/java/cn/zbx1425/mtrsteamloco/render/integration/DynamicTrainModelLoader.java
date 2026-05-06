@@ -14,7 +14,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.mojang.blaze3d.vertex.PoseStack;
-import mtr.MTR;
 import mtr.client.DynamicTrainModel;
 import mtr.client.DynamicTrainModelLegacy;
 import mtr.client.IResourcePackCreatorProperties;
@@ -46,7 +45,7 @@ public class DynamicTrainModelLoader {
             boolean bbModelPreload = MtrModelRegistryUtil.getBbModelPreloadFromDummyBbData(
                     model.get("dummyBbData").getAsJsonObject());
             if (ClientConfig.enableBbModelPreload || bbModelPreload) {
-
+                loadVanillaModelInto(model, target);
             }
         }
     }
@@ -293,6 +292,72 @@ public class DynamicTrainModelLoader {
         }
     }
 
+    public static void loadVanillaModelInto(JsonObject model, DynamicTrainModel target) {
+        if (!model.has("dummyBbData")) return;
+        String path = MtrModelRegistryUtil.getPathFromDummyBbData(model.get("dummyBbData").getAsJsonObject());
+        try {
+            String textureId = MtrModelRegistryUtil.getTextureIdFromDummyBbData(model.get("dummyBbData").getAsJsonObject());
+            ResourceLocation texture = resolveTexture(textureId, str -> str.endsWith(".png") ? str : (str + ".png"));
+
+            Map<PartBatch, CapturingVertexConsumer> mergeVertexConsumers = new HashMap<>();
+            target.properties.getAsJsonArray(IResourcePackCreatorProperties.KEY_PROPERTIES_PARTS).forEach(elem -> {
+                JsonObject partObject = elem.getAsJsonObject();
+                String partName = partObject.get(IResourcePackCreatorProperties.KEY_PROPERTIES_NAME).getAsString();
+                ModelMapper partModel = target.parts.get(partName);
+                if (partModel == null) return;
+
+                ModelTrainBase.RenderStage renderStage = EnumHelper.valueOf(ModelTrainBase.RenderStage.EXTERIOR,
+                        partObject.get(IResourcePackCreatorProperties.KEY_PROPERTIES_STAGE).getAsString().toUpperCase(Locale.ROOT));
+                final boolean mirror = partObject.get(IResourcePackCreatorProperties.KEY_PROPERTIES_MIRROR).getAsBoolean();
+                PartBatch batch = new PartBatch(partObject, mirror);
+                CapturingVertexConsumer vertexConsumer = mergeVertexConsumers.computeIfAbsent(batch, ignored -> new CapturingVertexConsumer());
+
+                vertexConsumer.beginStage(texture, renderStage);
+                partObject.getAsJsonArray(IResourcePackCreatorProperties.KEY_PROPERTIES_POSITIONS).forEach(positionElement -> {
+                    final float x = positionElement.getAsJsonArray().get(0).getAsFloat();
+                    final float z = positionElement.getAsJsonArray().get(1).getAsFloat();
+                    ModelPart modelPart = ((ModelMapperAccessor)partModel).getModelPart();
+                    if (mirror) {
+                        modelPart.setPos(-x, 0, z);
+                        modelPart.yRot = (float) Math.PI;
+                    } else {
+                        modelPart.setPos(x, 0, z);
+                        modelPart.yRot = 0;
+                    }
+                    vertexConsumer.captureModelPart(modelPart);
+                });
+            });
+
+            target.parts.clear();
+            JsonArray partsPropArray = new JsonArray();
+            List<JsonObject> propertiesToKeep = new ArrayList<>();
+            target.properties.getAsJsonArray(IResourcePackCreatorProperties.KEY_PROPERTIES_PARTS).forEach(partElement -> {
+                final JsonObject partObject = partElement.getAsJsonObject();
+                final String partName = partObject.get(IResourcePackCreatorProperties.KEY_PROPERTIES_NAME).getAsString();
+                if (!target.partsInfo.containsKey(partName) || !partObject.has(IResourcePackCreatorProperties.KEY_PROPERTIES_DISPLAY)) {
+                    return;
+                }
+                propertiesToKeep.add(partObject);
+            });
+            target.properties.add(IResourcePackCreatorProperties.KEY_PROPERTIES_PARTS, partsPropArray);
+            for (JsonObject partObject : propertiesToKeep) {
+                partsPropArray.add(partObject);
+            }
+
+            for (Map.Entry<PartBatch, CapturingVertexConsumer> entry : mergeVertexConsumers.entrySet()) {
+                PartBatch batch = entry.getKey();
+                CapturingVertexConsumer vertexConsumer = entry.getValue();
+                RawModel rawModel = vertexConsumer.models[0];
+                rawModel.triangulate();
+                target.parts.put(batch.batchId, new SowcerModelAgent(rawModel, true));
+                partsPropArray.add(batch.getPartObject());
+            }
+        } catch (Exception e) {
+            Main.LOGGER.error("Error when optimizing BBMODEL in DynamicTrainModel", e);
+            MtrModelRegistryUtil.recordLoadingError("Error when optimizing BBMODEL " + path, e);
+        }
+    }
+
     public static class PartBatch {
 
         public final ResourcePackCreatorProperties.DoorOffset doorOffset;
@@ -327,7 +392,7 @@ public class DynamicTrainModelLoader {
             final ModelTrainBase.RenderStage renderStage = EnumHelper.valueOf(ModelTrainBase.RenderStage.EXTERIOR,
                     partObject.get(IResourcePackCreatorProperties.KEY_PROPERTIES_STAGE).getAsString().toUpperCase(Locale.ROOT));
             this.skipRenderingIfTooFar = partObject.get(IResourcePackCreatorProperties.KEY_PROPERTIES_SKIP_RENDERING_IF_TOO_FAR).getAsBoolean()
-                || renderStage == ModelTrainBase.RenderStage.INTERIOR_TRANSLUCENT;
+                    || renderStage == ModelTrainBase.RenderStage.INTERIOR_TRANSLUCENT;
 
             this.batchId = String.format("$NTEPart:%s:%s:%s:%s:%s", doorOffset, renderCondition, whitelistedCars, blacklistedCars, skipRenderingIfTooFar);
         }
@@ -369,7 +434,7 @@ public class DynamicTrainModelLoader {
             available = UtilitiesClient.hasResource(id);
             (available ? RenderTrains.AVAILABLE_TEXTURES : RenderTrains.UNAVAILABLE_TEXTURES).add(textureString);
             if (!available) {
-                MTR.LOGGER.warn("[NeoMTR] Texture {} not found, using default", textureString);
+                System.out.println("Texture " + textureString + " not found, using default");
             }
         } else {
             available = RenderTrains.AVAILABLE_TEXTURES.contains(textureString);
@@ -378,7 +443,7 @@ public class DynamicTrainModelLoader {
         if (available) {
             return id;
         } else {
-            return ResourceLocation.parse("mtr:textures/block/transparent.png");
+            return ResourceLocation.parse("mtr:textures/block/transparent");
         }
     }
 }

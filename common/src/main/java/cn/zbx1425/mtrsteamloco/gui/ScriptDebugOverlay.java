@@ -17,6 +17,10 @@ import net.minecraft.client.gui.GuiComponent;
 #endif
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.util.FormattedCharSequence;
+import cn.zbx1425.mtrsteamloco.render.scripting.util.OrderedMap;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,80 +29,89 @@ import java.util.Map;
 public class ScriptDebugOverlay {
 
 #if MC_VERSION >= "12000"
-    public static void render(GuiGraphics vdStuff) {
+    public synchronized static void render(GuiGraphics vdStuff) {
         PoseStack matrices = vdStuff.pose();
 #else
-    public static void render(PoseStack vdStuff) {
-        PoseStack matrices = vdStuff;
+        public synchronized static void render(PoseStack vdStuff) {
+            PoseStack matrices = vdStuff;
 #endif
-        if (!ClientConfig.enableScriptDebugOverlay) return;
-        if (Minecraft.getInstance().screen != null) return;
+            if (!ClientConfig.enableScriptDebugOverlay) return;
+            if (Minecraft.getInstance().screen != null) return;
 
-        matrices.pushPose();
-        matrices.translate(10, 10, 0);
+            matrices.pushPose();
+            matrices.translate(10, 10, 0);
 
-        Map<ScriptHolder, List<AbstractScriptContext>> contexts = new HashMap<>();
-        for (Map.Entry<AbstractScriptContext, ScriptHolder> entry : ScriptContextManager.livingContexts.entrySet()) {
-            contexts.computeIfAbsent(entry.getValue(), k -> new java.util.ArrayList<>()).add(entry.getKey());
-        }
+            Map<ScriptHolder, List<AbstractScriptContext>> contexts = new HashMap<>();
+            for (Map.Entry<AbstractScriptContext, ScriptHolder> entry : ScriptContextManager.livingContexts.entrySet()) {
+                contexts.computeIfAbsent(entry.getValue(), k -> new java.util.ArrayList<>()).add(entry.getKey());
+            }
 
-        int y = 0;
-        Font font = Minecraft.getInstance().font;
-        int lineHeight = Mth.ceil(font.lineHeight * 1.2f);
-        for (Map.Entry<ScriptHolder, List<AbstractScriptContext>> entry : contexts.entrySet()) {
-            ScriptHolder holder = entry.getKey();
-            synchronized (holder) {
+            int y = 0;
+            Font font = Minecraft.getInstance().font;
+            int lineHeight = Mth.ceil(font.lineHeight * 1.2f);
+            for (Map.Entry<ScriptHolder, List<AbstractScriptContext>> entry : contexts.entrySet()) {
+                ScriptHolder holder = entry.getKey();
                 if (holder.failTime > 0) {
-                    drawText(vdStuff, font, holder.name + " FAILED", 0, y, 0xFFFF0000);
-                    y += lineHeight;
-                    for (String msgLine : Splitter.fixedLength(60).split(holder.failException.getMessage())) {
-                        drawText(vdStuff, font, msgLine, 5, y, 0xFFFF8888);
-                        y += lineHeight;
+                    y = drawText(vdStuff, font, holder.name + " FAILED", 0, y, 0xFFFF0000);
+                    if (holder.failException != null) {
+                        y = drawText(vdStuff, font, holder.failException.getMessage(), 5, y, 0xFFFF8888);
                     }
                 } else {
-                    drawText(vdStuff, font, holder.name, 0, y, 0xFFAAAAFF);
-                    y += lineHeight;
+                    y = drawText(vdStuff, font, holder.name, 0, y, 0xFFAAAAFF);
                 }
-            }
-            for (AbstractScriptContext context : entry.getValue()) {
-                drawText(vdStuff, font,
-                        String.format("#%08X (%.2f ms)", context.hashCode(), context.lastExecuteDurationMovingAverage / 1000000.0),
-                        10, y, 0xFFCCCCFF);
-                y += lineHeight;
-                for (Map.Entry<String, Object> debugInfo : context.debugInfo.entrySet()) {
-                    Object value = debugInfo.getValue();
-                    if (value instanceof GraphicsTexture) {
-                        GraphicsTexture texture = (GraphicsTexture) value;
-                        float scale = (Minecraft.getInstance().getWindow().getGuiScaledWidth() - 40) / (float) texture.width;
-                        blit(vdStuff, texture.identifier, 20, y, (int)(texture.width * scale), (int)(texture.height * scale));
-                        drawText(vdStuff, font, debugInfo.getKey() + ": GraphicsTexture", 20, y, 0xFFFFFFFF);
-                        y += (int)(texture.height * scale) + lineHeight / 2;
-                    } else {
-                        drawText(vdStuff, font, debugInfo.getKey() + ": " + debugInfo.getValue(), 20, y, 0xFFFFFFFF);
-                        y += lineHeight;
+                for (AbstractScriptContext context : entry.getValue()) {
+                    y = drawText(vdStuff, font,
+                            String.format("#%08X (%.2f ms)", context.hashCode(), context.lastExecuteDuration / 1000.0),
+                            10, y, 0xFFCCCCFF);
+                    List<Map.Entry<String, Object>> debugInfos = context.getDebugInfo().entryList();
+                    for (Map.Entry<String, Object> debugInfo : debugInfos) {
+                        Object value = debugInfo.getValue();
+                        if (value instanceof GraphicsTexture) {
+                            GraphicsTexture texture = (GraphicsTexture) value;
+                            float scale0 = (Minecraft.getInstance().getWindow().getGuiScaledWidth() - 40) / (float) texture.width;
+                            float scale1 = font.lineHeight * 5 / (float) texture.height;
+                            float scale = Math.min(scale0, scale1);
+                            y = drawText(vdStuff, font, debugInfo.getKey() + ": GraphicsTexture", 20, y, 0xFFFFFFFF);
+                            blit(vdStuff, texture.identifier, 20, y, (int)(texture.width * scale), (int)(texture.height * scale));
+                            y += (int)(texture.height * scale);
+                        } else {
+                            y = drawText(vdStuff, font, debugInfo.getKey() + ": " + debugInfo.getValue(), 20, y, 0xFFFFFFFF);
+                        }
+                        y += Mth.ceil(font.lineHeight * 0.2f);
                     }
                 }
             }
-        }
 
-        matrices.popPose();
-    }
+            matrices.popPose();
+        }
 
 
 #if MC_VERSION >= "12000"
-    private static void drawText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
-        guiGraphics.drawString(font, text, x, y, color);
-    }
-    private static void blit(GuiGraphics guiGraphics, ResourceLocation texture, int x, int y, int width, int height) {
-        guiGraphics.blit(texture, x, y, width, height, 0, 0, 1, 1, 1, 1);
-    }
+        private static int drawText(GuiGraphics guiGraphics, Font font, String text, int x, int y, int color) {
+            FormattedText formattedText = FormattedText.of(text);
+            List<FormattedCharSequence> lines = font.split(formattedText, Minecraft.getInstance().getWindow().getGuiScaledWidth() - 40);
+            for (FormattedCharSequence line : lines) {
+                guiGraphics.drawString(font, line, x, y, color);
+                y += Mth.ceil(font.lineHeight * 1.1f);
+            }
+            return y;
+        }
+        private static void blit(GuiGraphics guiGraphics, ResourceLocation texture, int x, int y, int width, int height) {
+            guiGraphics.blit(texture, x, y, width, height, 0, 0, 1, 1, 1, 1);
+        }
 #else
-    private static void drawText(PoseStack matrices, Font font, String text, int x, int y, int color) {
-        font.drawShadow(matrices, text, x, y, color);
-    }
-    private static void blit(PoseStack matrices, ResourceLocation texture, int x, int y, int width, int height) {
-        RenderSystem.setShaderTexture(0, texture);
-        GuiComponent.blit(matrices, x, y, width, height, 0, 0, 1, 1, 1, 1);
-    }
+        private static int drawText(PoseStack matrices, Font font, String text, int x, int y, int color) {
+            FormattedText formattedText = FormattedText.of(text);
+            List<FormattedCharSequence> lines = font.split(formattedText, Minecraft.getInstance().getWindow().getGuiScaledWidth() - 40);
+            for (FormattedCharSequence line : lines) {
+                font.drawShadow(matrices, line, x, y, color);
+                y += Mth.ceil(font.lineHeight * 1.1f);
+            }
+            return y;
+        }
+        private static void blit(PoseStack matrices, ResourceLocation texture, int x, int y, int width, int height) {
+            RenderSystem.setShaderTexture(0, texture);
+            GuiComponent.blit(matrices, x, y, width, height, 0, 0, 1, 1, 1, 1);
+        }
 #endif
-}
+    }

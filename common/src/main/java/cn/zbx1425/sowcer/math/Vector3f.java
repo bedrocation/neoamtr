@@ -86,6 +86,10 @@ public class Vector3f {
         this.impl = new com.mojang.math.Vector3f(x, y, z);
     }
 
+    public Vector3f(com.mojang.math.Vector3f moj) {
+        this.impl = moj.copy();
+    }
+
     public float x() { return impl.x(); }
     public float y() { return impl.y(); }
     public float z() { return impl.z(); }
@@ -148,9 +152,17 @@ public class Vector3f {
 
 #endif
 
+    public Vector3f(double x, double y, double z) {
+        this((float)x, (float)y, (float)z);
+    }
+
     @Override
     public int hashCode() {
         return impl.hashCode();
+    }
+
+    public String toString() {
+        return "(" + x() + ", " + y() + ", " + z() + ")";
     }
 
     public float distance(Vector3f other) {

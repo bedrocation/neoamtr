@@ -6,11 +6,15 @@ import cn.zbx1425.mtrsteamloco.render.ShadersModHandler;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.gui.entries.StringListEntry;
+import me.shedaniel.clothconfig2.api.AbstractConfigListEntry;
 import mtr.mappings.Text;
 import net.minecraft.client.Minecraft;
 #if MC_VERSION >= "12000"
 #endif
 import net.minecraft.client.gui.screens.Screen;
+
+import java.util.List;
 
 public final class ConfigScreen {
 
@@ -89,7 +93,7 @@ public final class ConfigScreen {
                         ClientConfig.translucentSort
                 ).setTooltip(
                         Text.translatable("gui.mtrsteamloco.config.client.translucentsort.description")
-                ).setSaveConsumer(checked -> ClientConfig.translucentSort = checked).setDefaultValue(false).build()
+                ).setSaveConsumer(checked -> ClientConfig.translucentSort = checked).setDefaultValue(true).build()
         );
         common.addEntry(entryBuilder
                 .startBooleanToggle(
@@ -127,6 +131,26 @@ public final class ConfigScreen {
                         ClientConfig.enableSmoke
                 ).setSaveConsumer(checked -> ClientConfig.enableSmoke = checked).setDefaultValue(true).build()
         );
+        common.addEntry(entryBuilder
+                .startIntField(
+                        Text.translatable("gui.mtrsteamloco.config.client.rail_distance_renderer_interval"),
+                        ClientConfig.railDistanceRendererInterval
+                ).setSaveConsumer(value -> ClientConfig.railDistanceRendererInterval = value).setDefaultValue(5).build()
+        );
+        common.addEntry(entryBuilder
+                .startIntField(
+                        Text.translatable("gui.mtrsteamloco.config.client.rail_distance_renderer_max_distance_sqr"),
+                        (int) Math.round(Math.sqrt(ClientConfig.railDistanceRendererMaxDistanceSqr))
+                ).setSaveConsumer(value -> ClientConfig.railDistanceRendererMaxDistanceSqr = value * value).setDefaultValue(16).build()
+        );
+
+        List<AbstractConfigListEntry> customConfigs = ClientConfig.getCustomConfigEntrys(entryBuilder, () -> ConfigScreen.createScreen(parent));
+        if (!customConfigs.isEmpty()) {
+
+            for (AbstractConfigListEntry entry : customConfigs) {
+                common.addEntry(entry);
+            }
+        }
 
         builder.setSavingRunnable(ClientConfig::save);
         return builder.build();

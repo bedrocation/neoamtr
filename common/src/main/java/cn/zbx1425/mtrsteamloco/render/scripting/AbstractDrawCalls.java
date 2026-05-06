@@ -11,23 +11,28 @@ import net.minecraft.sounds.SoundSource;
 
 public abstract class AbstractDrawCalls {
 
-    public static class ClusterDrawCall {
+    public static interface DrawCall {
+        public void commit(DrawScheduler drawScheduler, Matrix4f basePose, Matrix4f worldPose, int light);
+    }
+
+    public static abstract class DrawCallBase implements DrawCall {
         public ModelCluster model;
         public DynamicModelHolder modelHolder;
         public Matrix4f pose;
 
-        public ClusterDrawCall(ModelCluster model, Matrix4f pose) {
+        public DrawCallBase(ModelCluster model, Matrix4f pose) {
             this.model = model;
             this.pose = pose;
         }
 
-        public ClusterDrawCall(DynamicModelHolder model, Matrix4f pose) {
+        public DrawCallBase(DynamicModelHolder model, Matrix4f pose) {
             this.modelHolder = model;
             this.pose = pose;
         }
 
-        public void commit(DrawScheduler drawScheduler, Matrix4f basePose, int light) {
-            Matrix4f finalPose = basePose.copy();
+        @Override
+        public void commit(DrawScheduler drawScheduler, Matrix4f basePose, Matrix4f worldPose, int light) {
+            Matrix4f finalPose = selectPose(basePose, worldPose).copy();
             finalPose.multiply(pose);
             if (model != null) {
                 drawScheduler.enqueue(model, finalPose, light);
@@ -37,6 +42,39 @@ public abstract class AbstractDrawCalls {
                     drawScheduler.enqueue(model, finalPose, light);
                 }
             }
+        }
+
+        protected abstract Matrix4f selectPose(Matrix4f basePose, Matrix4f worldPose);
+    }
+
+    public static class ClusterDrawCall extends DrawCallBase {
+
+        public ClusterDrawCall(ModelCluster model, Matrix4f pose) {
+            super(model, pose);
+        }
+
+        public ClusterDrawCall(DynamicModelHolder model, Matrix4f pose) {
+            super(model, pose);
+        }
+
+        @Override
+        protected Matrix4f selectPose(Matrix4f basePose, Matrix4f worldPose) {
+            return basePose;
+        }
+    }
+
+    public static class WorldDrawCall extends DrawCallBase {
+        public WorldDrawCall(ModelCluster model, Matrix4f pose) {
+            super(model, pose);
+        }
+
+        public WorldDrawCall(DynamicModelHolder model, Matrix4f pose) {
+            super(model, pose);
+        }
+
+        @Override
+        protected Matrix4f selectPose(Matrix4f basePose, Matrix4f worldPose) {
+            return worldPose;
         }
     }
 

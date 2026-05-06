@@ -7,9 +7,11 @@ import io.netty.buffer.Unpooled;
 import mtr.Registry;
 import mtr.RegistryClient;
 import mtr.data.Rail;
+import mtr.packet.PacketTrainDataGuiServer;
 import mtr.data.RailwayData;
 import mtr.packet.IPacket;
 import net.minecraft.client.Minecraft;
+import mtr.data.TransportMode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceKey;
@@ -18,6 +20,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import mtr.data.RailType;
 
 import java.util.Map;
 
@@ -43,7 +46,8 @@ public class PacketUpdateRail {
 #endif
         BlockPos posStart = packet.readBlockPos();
         BlockPos posEnd = packet.readBlockPos();
-        RailExtraSupplier extraTarget = (RailExtraSupplier)(new Rail(packet));
+        Rail target = new Rail(packet);
+        RailExtraSupplier extraTarget = (RailExtraSupplier)(target);
         server.execute(() -> {
             ServerLevel level = server.getLevel(levelKey);
             if (level == null) return;
@@ -56,12 +60,12 @@ public class PacketUpdateRail {
             RailExtraSupplier extraForward = (RailExtraSupplier) railForward;
             RailExtraSupplier extraBackward = (RailExtraSupplier) railBackward;
 
-            extraForward.setModelKey(extraTarget.getModelKey());
-            extraBackward.setModelKey(extraTarget.getModelKey());
-            extraForward.setVerticalCurveRadius(extraTarget.getVerticalCurveRadius());
-            extraBackward.setVerticalCurveRadius(extraTarget.getVerticalCurveRadius());
+            extraForward.partialCopyFrom(target);
+            extraBackward.partialCopyFrom(target);
             extraForward.setRenderReversed(extraTarget.getRenderReversed());
             extraBackward.setRenderReversed(!extraTarget.getRenderReversed());
+            extraForward.setRailType(target.railType);
+            if (railBackward.railType != RailType.NONE) extraBackward.setRailType(target.railType);
 
             final FriendlyByteBuf outboundPacket = new FriendlyByteBuf(Unpooled.buffer());
             outboundPacket.writeUtf(railForward.transportMode.toString());
