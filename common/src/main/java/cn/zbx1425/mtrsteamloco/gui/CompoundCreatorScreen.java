@@ -139,6 +139,7 @@ public class CompoundCreatorScreen extends Screen {
 
     @Override
     protected void init() {
+        scissor = new Rectangle(0, 40, width, height - 80);
     }
 
     private void update() {
@@ -208,7 +209,6 @@ public class CompoundCreatorScreen extends Screen {
         btnCopy.render(matrices, mouseX, mouseY, partialTick);
         btnClear.render(matrices, mouseX, mouseY, partialTick);
         btnClose.render(matrices, mouseX, mouseY, partialTick);
-        scissor = new Rectangle(0, 40, width, height - 80);
         ScissorsHandler.INSTANCE.scissor(scissor);
         checkAndScroll(scroll);
         int y = 40 + scroll;
