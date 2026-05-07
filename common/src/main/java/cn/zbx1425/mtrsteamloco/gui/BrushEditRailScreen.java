@@ -53,23 +53,40 @@ public class BrushEditRailScreen {
     private final RailExtraSupplier supplier;
     private final BlockPos pickedPosStart;
     private final BlockPos pickedPosEnd;
+    private final BlockPos clickedPos;
+    private final boolean wasRailSwapped;
 
     private Screen screen;
     private Screen parent;
 
-    private BrushEditRailScreen(Rail pickedRail, BlockPos pickedPosStart, BlockPos pickedPosEnd, Screen parent) {
+    private BrushEditRailScreen(Rail pickedRail, BlockPos pickedPosStart, BlockPos posEnd, Screen parent) {
+        BlockPos originalClickedPos = pickedPosStart;
+        
+        BlockPos correctedPosStart;
+        BlockPos correctedPosEnd;
+        Rail correctedRail;
+        boolean wasSwapped;
+        
         if (pickedRail.railType == RailType.NONE) {
-            pickedRail = null;
-            Map<BlockPos, Rail> mp0 = ClientData.RAILS.get(pickedPosEnd);
-            if (mp0 != null) pickedRail = mp0.get(pickedPosStart);
-            BlockPos temp = pickedPosStart;
-            pickedPosStart = pickedPosEnd;
-            pickedPosEnd = temp;
+            correctedRail = null;
+            Map<BlockPos, Rail> mp0 = ClientData.RAILS.get(posEnd);
+            if (mp0 != null) correctedRail = mp0.get(pickedPosStart);
+            correctedPosStart = posEnd;
+            correctedPosEnd = pickedPosStart;
+            wasSwapped = true;
+        } else {
+            correctedRail = pickedRail;
+            correctedPosStart = pickedPosStart;
+            correctedPosEnd = posEnd;
+            wasSwapped = false;
         }
-        this.pickedRail = pickedRail;
-        this.supplier = (RailExtraSupplier) pickedRail;
-        this.pickedPosStart = pickedPosStart;
-        this.pickedPosEnd = pickedPosEnd;
+        
+        this.clickedPos = originalClickedPos;
+        this.wasRailSwapped = wasSwapped;
+        this.pickedRail = correctedRail;
+        this.supplier = (RailExtraSupplier) correctedRail;
+        this.pickedPosStart = correctedPosStart;
+        this.pickedPosEnd = correctedPosEnd;
         this.parent = parent;
         init();
     }
@@ -243,9 +260,8 @@ public class BrushEditRailScreen {
                     }).build());
 
             if (enableRollAngle) {
-                Vector3f p1 = new Vector3f(pickedRail.getPosition(0));
-                Vector3f start = new Vector3f(pickedPosStart);
-                boolean flag = p1.distance(start) < new Vector3f(pickedRail.getPosition(pickedRail.getLength())).distance(start);
+                boolean flag = !wasRailSwapped;
+                
                 common.addEntry(new RollAnglesListEntry(pickedRail, flag, this::updateRailAngle, f -> PacketUpdateRail.sendUpdateC2S(pickedRail, pickedPosStart, pickedPosEnd), () -> BrushEditRailScreen.createScreen(pickedRail, pickedPosStart, pickedPosEnd, parent)));
             }
 
