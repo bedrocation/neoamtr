@@ -210,7 +210,7 @@ public class JonModelTrainRenderer extends TrainRendererBase implements IGui {
 			available = UtilitiesClient.hasResource(id);
 			(available ? RenderTrains.AVAILABLE_TEXTURES : RenderTrains.UNAVAILABLE_TEXTURES).add(textureString);
 			if (!available) {
-				MTR.LOGGER.warn("[NeoMTR] Texture {} not found, using default", textureString);
+				MTR.LOGGER.warn("[NeoAMTR] Texture {} not found, using default", textureString);
 			}
 		} else {
 			available = RenderTrains.AVAILABLE_TEXTURES.contains(textureString);

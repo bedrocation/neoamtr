@@ -153,7 +153,7 @@ public class Config {
 	}
 
 	public static void refreshProperties() {
-		MTR.LOGGER.info("[NeoMTR] Reading config file...");
+		MTR.LOGGER.info("[NeoAMTR] Reading config file...");
 
 		try {
 			final JsonObject jsonConfig = JsonParser.parseString(String.join("", Files.readAllLines(CONFIG_FILE_PATH))).getAsJsonObject();
@@ -201,7 +201,7 @@ public class Config {
 			// Generate config if non-existent
 			writeToFile();
 		} catch (Exception e) {
-			MTR.LOGGER.error("[NeoMTR] Failed to read config file!", e);
+			MTR.LOGGER.error("[NeoAMTR] Failed to read config file!", e);
 			writeToFile();
 		}
 	}
@@ -221,9 +221,9 @@ public class Config {
 
 		try {
 			Files.write(CONFIG_FILE_PATH, Collections.singleton(RailwayData.prettyPrint(jsonConfig)));
-			MTR.LOGGER.info("[NeoMTR] Config file saved to disk");
+			MTR.LOGGER.info("[NeoAMTR] Config file saved to disk");
 		} catch (Exception e) {
-			MTR.LOGGER.error("[NeoMTR] Failed to save config file!", e);
+			MTR.LOGGER.error("[NeoAMTR] Failed to save config file!", e);
 		}
 	}
 }

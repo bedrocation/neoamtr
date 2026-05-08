@@ -29,7 +29,7 @@ public class MTR implements IPacket {
 	private static int gameTick = 0;
 
 	public static final String MOD_ID = "mtr";
-	public static final Logger LOGGER = LoggerFactory.getLogger("NeoMTR");
+	public static final Logger LOGGER = LoggerFactory.getLogger("NeoAMTR");
 
 	public static ResourceLocation id(String path) {
 		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);

@@ -303,13 +303,13 @@ public class MTRClient implements IPacket {
 			}
 
 			if(isReplayMod) {
-				MTR.LOGGER.info("[NeoMTR] Running in Replay Mod mode");
+				MTR.LOGGER.info("[NeoAMTR] Running in Replay Mod mode");
 			}
 			if(isVivecraft) {
-				MTR.LOGGER.info("[NeoMTR] Vivecraft detected");
+				MTR.LOGGER.info("[NeoAMTR] Vivecraft detected");
 			}
 			if(isPehkui) {
-				MTR.LOGGER.info("[NeoMTR] Pehkui detected");
+				MTR.LOGGER.info("[NeoAMTR] Pehkui detected");
 			}
 
 			if (!Keys.LIFTS_ONLY) {

@@ -230,17 +230,17 @@ public class RailwayData extends PersistentStateMapper implements IPacket {
 
 		try {
 			UpdateDynmap.updateDynmap(world, this);
-			MTR.LOGGER.info("[NeoMTR] Dynmap is detected");
+			MTR.LOGGER.info("[NeoAMTR] Dynmap is detected");
 		} catch (NoClassDefFoundError | Exception ignored) {
 		}
         try {
 			UpdateBlueMap.updateBlueMap(world, this);
-			MTR.LOGGER.info("[NeoMTR] BlueMap is detected");
+			MTR.LOGGER.info("[NeoAMTR] BlueMap is detected");
 		} catch (NoClassDefFoundError | Exception ignored) {
 		}
         try {
 			UpdateSquaremap.updateSquaremap(world, this);
-			MTR.LOGGER.info("[NeoMTR] Squaremap is detected");
+			MTR.LOGGER.info("[NeoAMTR] Squaremap is detected");
 		} catch (NoClassDefFoundError | Exception ignored) {
 		}
     }
@@ -800,7 +800,7 @@ public class RailwayData extends PersistentStateMapper implements IPacket {
 	}
 
 	private static void runCommand(MinecraftServer server, CommandSourceStack commandSourceStack, String command) {
-		MTR.LOGGER.info("[NeoMTR] Running command {}", command);
+		MTR.LOGGER.info("[NeoAMTR] Running command {}", command);
 		Utilities.sendCommand(server, commandSourceStack, command);
 	}
 

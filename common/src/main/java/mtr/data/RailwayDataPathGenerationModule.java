@@ -23,15 +23,15 @@ public class RailwayDataPathGenerationModule extends RailwayDataModuleBase {
 		if (depot != null) {
 			if (generatingPathThreads.containsKey(depotId)) {
 				generatingPathThreads.get(depotId).interrupt();
-				MTR.LOGGER.info("[NeoMTR] Restarting path generation {}", (depot.name.isEmpty() ? "" : " for " + depot.name));
+				MTR.LOGGER.info("[NeoAMTR] Restarting path generation {}", (depot.name.isEmpty() ? "" : " for " + depot.name));
 			} else {
-				MTR.LOGGER.info("[NeoMTR] Starting path generation {}", (depot.name.isEmpty() ? "" : " for " + depot.name));
+				MTR.LOGGER.info("[NeoAMTR] Starting path generation {}", (depot.name.isEmpty() ? "" : " for " + depot.name));
 			}
 			depot.generateMainRoute(minecraftServer, world, railwayData.dataCache, rails, railwayData.sidings, thread -> generatingPathThreads.put(depotId, thread));
 			railwayData.resetTrainDelays(depot);
 		} else {
 			PacketTrainDataGuiServer.generatePathS2C(world, depotId, 0);
-			MTR.LOGGER.info("[NeoMTR] Failed to generate path, depot is null");
+			MTR.LOGGER.info("[NeoAMTR] Failed to generate path, depot is null");
 		}
 	}
 }

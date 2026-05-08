@@ -117,13 +117,13 @@ tasks.register("moveForgeBuilds") {
 			copy {
 				from "build/libs"
 				into "../build/latest"
-				rename { fileName -> "NeoMTR-${fileName.replace(rootProject.mod_version, "latest")}" }
+				rename { fileName -> "NeoAMTR-${fileName.replace(rootProject.mod_version, "latest")}" }
 			}
 			copy {
 				from "build/libs"
 				include "*${rootProject.minecraft_version}-dev-shadow.jar"
 				into "../build/libs"
-				rename "(.+)", "NeoMTR-\$1"
+				rename "(.+)", "NeoAMTR-\$1"
 			}
 		}
 	}

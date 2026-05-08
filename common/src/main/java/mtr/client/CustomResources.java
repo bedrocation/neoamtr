@@ -111,7 +111,7 @@ public class CustomResources implements IResourcePackCreatorProperties, ICustomR
 							}));
 						}
 					} catch (Exception e) {
-						MTR.LOGGER.error("[NeoMTR] Failed to load custom train!", e);
+						MTR.LOGGER.error("[NeoAMTR] Failed to load custom train!", e);
 					}
 				});
 			} catch (Exception ignored) {
@@ -130,7 +130,7 @@ public class CustomResources implements IResourcePackCreatorProperties, ICustomR
 
 						CUSTOM_SIGNS.put(CUSTOM_SIGN_ID_PREFIX + entry.getKey(), new CustomSign(ResourceLocation.parse(jsonObject.get(CUSTOM_SIGNS_TEXTURE_ID).getAsString()), flipTexture, customText, flipCustomText, small, backgroundColor));
 					} catch (Exception e) {
-						MTR.LOGGER.error("[NeoMTR] Failed to load custom sign!", e);
+						MTR.LOGGER.error("[NeoAMTR] Failed to load custom sign!", e);
 					}
 				});
 			} catch (Exception ignored) {
@@ -139,10 +139,10 @@ public class CustomResources implements IResourcePackCreatorProperties, ICustomR
 
 		RELOAD_LISTENERS.forEach(resourceManagerConsumer -> resourceManagerConsumer.accept(manager));
 
-		MTR.LOGGER.info("[NeoMTR] Loaded {} custom train(s)", customTrains.size());
+		MTR.LOGGER.info("[NeoAMTR] Loaded {} custom train(s)", customTrains.size());
 		MTR.LOGGER.info(String.join(", ", customTrains));
 
-		MTR.LOGGER.info("[NeoMTR] Loaded {} custom sign(s)", CUSTOM_SIGNS.size());
+		MTR.LOGGER.info("[NeoAMTR] Loaded {} custom sign(s)", CUSTOM_SIGNS.size());
 		MTR.LOGGER.info(String.join(", ", CUSTOM_SIGNS.keySet()));
 	}
 

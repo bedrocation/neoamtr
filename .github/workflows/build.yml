@@ -39,5 +39,5 @@ jobs:
       - name: Capture build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: NeoMTR-${{ steps.vars.outputs.sha_short }}
+          name: NeoAMTR-${{ steps.vars.outputs.sha_short }}
           path: build/release/

@@ -117,7 +117,7 @@ public class ClientCache extends DataCache implements IGui {
 	}
 
 	public void refreshDynamicResources() {
-		MTR.LOGGER.info("[NeoMTR] Refreshing dynamic resources");
+		MTR.LOGGER.info("[NeoAMTR] Refreshing dynamic resources");
 		resourcesToRefresh.addAll(dynamicResources.keySet());
 	}
 

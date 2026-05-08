@@ -17,7 +17,7 @@ def testServer = rootProject.properties.containsKey("testServer") ? rootProject.
 
 rootProject.ext.architectury_id = minecraft_main_version == 16 ? "me.shedaniel" : "dev.architectury"
 rootProject.ext.variation = rootProject.properties.containsKey("variation") ? rootProject.getProperties().get("variation").toString() : "normal"
-rootProject.ext.variation_header = rootProject.variation == "normal" ? "NeoMTR" : rootProject.variation == "server" ? "NeoMTR-server" : "Modern-Elevators-Escalators"
+rootProject.ext.variation_header = rootProject.variation == "normal" ? "NeoAMTR" : rootProject.variation == "server" ? "NeoAMTR-server" : "Modern-Elevators-Escalators"
 
 architectury {
 	minecraft = minecraft_version
@@ -246,7 +246,7 @@ class DummyArchiveTask extends AbstractArchiveTask {
 task dummyForgeOutput(type: DummyArchiveTask) {
 	// This is to make github.com/teaconmc/longjing happy.
 	destinationDirectory = file("build/release/")
-	archiveBaseName = "NeoMTR-neoforge"
+	archiveBaseName = "NeoAMTR-neoforge"
 	archiveVersion = rootProject.mod_version + "+" + minecraft_version
 	archiveExtension = "jar"
 }

@@ -301,10 +301,10 @@ public class Depot extends AreaBase implements IReducedSaveData {
 				});
 
 				PacketTrainDataGuiServer.generatePathS2C(world, id, successfulSegments[0]);
-				MTR.LOGGER.info("[NeoMTR] Finished path generation {}", (name.isEmpty() ? "" : "for " + name));
+				MTR.LOGGER.info("[NeoAMTR] Finished path generation {}", (name.isEmpty() ? "" : "for " + name));
 			} catch (Exception e) {
 				PacketTrainDataGuiServer.generatePathS2C(world, id, 0);
-				MTR.LOGGER.error("[NeoMTR] Failed to generate path {}", (name.isEmpty() ? "" : "for " + name), e);
+				MTR.LOGGER.error("[NeoAMTR] Failed to generate path {}", (name.isEmpty() ? "" : "for " + name), e);
 			}
 		});
 		callback.accept(thread);
