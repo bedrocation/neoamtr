@@ -5,8 +5,8 @@ license = "MIT"
 [[mods]]
 modId = "mtr"
 version = "${version}"
-displayName = "NeoMTR"
-authors = "Jonathan Ho & Zbx1425"
+displayName = "NeoAMTR"
+authors = "Jonathan Ho & Zbx1425, Aphrodite281, SunBedrock"
 description = "A Minecraft mod that adds automated train systems into the game."
 logoFile = "icon.png"
 
