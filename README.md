@@ -8,8 +8,9 @@ Integrates code from [ANTE](https://github.com/aphrodite281/mtr-ante) (version 1
 
 - [x] Rail rolling
 - [x] Free-angle nodes
-- [x] JavaScript support
+- [x] Extended JavaScript support
 - [x] Compound creator
+- [x] More track speed limits
 - [ ] Displacement tool (TODO)
 
 ## Notes
