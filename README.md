@@ -1,3 +1,21 @@
+# NeoAMTR
+
+![NeoAMTR Logo](./fabric/src/main/resources/icon.png)
+
+Integrates code from [ANTE](https://github.com/aphrodite281/mtr-ante) (version 1.1.0) into [NeoMTR](https://github.com/zbx1425/NeoMTR), enabling features such as rail rolling and free-angle nodes.
+
+## Ported Features
+
+- [x] Rail rolling
+- [x] Free-angle nodes
+- [x] JavaScript support
+- [x] Compound creator
+- [ ] Displacement tool (TODO)
+
+## Notes
+
+100% compatibility is not guaranteed — please test thoroughly. If you encounter any bugs, feel free to open an issue.
+
 # Minecraft Transit Railway 3.0
 
 _Minecraft Transit Railway_ is a [Minecraft mod](https://minecraft.gamepedia.com/Mods) based on Hong Kong's MTR, the London Underground, and the New York Subway. It adds trains into the game along with other miscellaneous blocks and items. With this mod, it is possible to build a fully functional railway system in your world!
